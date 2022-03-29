@@ -18,6 +18,7 @@
         <option selected disabled id="loading">Loading...</option>
     </select>
     <button id="addPad">+</button>
+    <button id="deletePad">-</button>
     <div class="pad" id="scratch" contenteditable>
     </div>
 </body>
@@ -67,6 +68,7 @@
         pageElements.selectBox = document.getElementById('padselect');
         pageElements.inputBox = document.getElementById('scratch');
         pageElements.addButton = document.getElementById('addPad');
+        pageElements.deleteButton = document.getElementById('deletePad');
         
         return pageElements;
     };
@@ -83,6 +85,7 @@
         pageElements.selectBox.removeChild(document.getElementById('loading'));
         pageElements.selectBox.addEventListener('change', onPadChange);
         pageElements.addButton.addEventListener('click', addPad);
+        pageElements.deleteButton.addEventListener('click', deletePad);
     };
     
     function createOption(key){
@@ -92,7 +95,11 @@
             }
             opt.value = key;
             opt.innerHTML = key;
+            opt.id = "select-" + key;
         pageElements.selectBox.appendChild(opt);
+    };
+    
+    function removeOption(key){
     };
     
     function onPadChange(){
@@ -104,10 +111,21 @@
     function addPad(){
         let name = prompt("Enter pad name:");
         
-        savePad(name, "");
-        createOption(name);
-        pageElements.selectBox.value = name;
-        onPadChange();
+        if(name){
+            savePad(name, "");
+            createOption(name);
+            pageElements.selectBox.value = name;
+            onPadChange();
+        }
+    };
+    
+    function deletePad(){
+        if(confirm("Really delete this pad?")){
+            localStorage.removeItem(settings.selected);
+            pageElements.selectBox.removeChild(document.getElementById('select-'+ settings.selected));
+            pageElements.selectBox.value = 'Base';;
+            onPadChange();
+        }
     };
     
     function loadPad(pad) {
