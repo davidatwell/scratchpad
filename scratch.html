@@ -1,29 +1,150 @@
-<html contenteditable>
+<html>
     <head>
         <style>
-            body{
+            .pad{
                 font-family:Conosolas, Monaco, monospace;
                 font-size:18px;
                 padding:18px;
                 border:2px solid #eeee00;
-                }
+            }
+            #padSelect{
+                margin:2px 0 10px 0;
+            }
         </style>
         <title>Scratch Pad</title>
     </head>
-<body id="body">
-    
+<body>
+    <select id="padselect">
+        <option selected disabled id="loading">Loading...</option>
+    </select>
+    <button id="addPad">+</button>
+    <div class="pad" id="scratch" contenteditable>
+    </div>
 </body>
 <script>
-    document.querySelector('body').focus();
-    function persistInput(input) { 
-        var key = "input-" + input.id;
-        var storedValue = localStorage.getItem(key);
-        if (storedValue) input.innerText = storedValue;
-        input.addEventListener('input', function () {
+    let settings = {};
+    let pageElements = {};
+    
+    function initialize(){
+        if(!sniff()){
+            alert("HTML5 LocalStorage disabled or not available on your browser.");
+            return false;
+        };
+        
+        setupLocalStorage();
+        getPageElements();
+        getSettings();
+        getAllPads();
+        if(settings.selected){loadPad(settings.selected);}
+    };
+    
+    function sniff(){
+        try {
+            localStorage.setItem("sniff","sniff");
+            localStorage.removeItem("sniff","sniff");
+            return true;
+        } catch (e) {
+            return false;
+        }
+    };
+    
+    function setupLocalStorage(){
+        let lskeys = Object.keys(localStorage);
+        
+        if(lskeys.includes('input-body') 
+            && !lskeys.includes('settings') 
+            && !lskeys.includes('Base')){ //migrate from legacy
+                localStorage.setItem('settings','');
+                localStorage.setItem('Base',localStorage.getItem('input-body'));
+                localStorage.removeItem('input-body');
+        } else {
+            if(!lskeys.includes('settings')){saveSettings();}
+            if(!lskeys.includes('Base')){localStorage.setItem('Base','');}
+        }
+    };
+    
+    function getPageElements(){
+        pageElements.selectBox = document.getElementById('padselect');
+        pageElements.inputBox = document.getElementById('scratch');
+        pageElements.addButton = document.getElementById('addPad');
+        
+        return pageElements;
+    };
+    
+    function getAllPads(){
+        let lskeys = Object.keys(localStorage);
+        
+        lskeys.forEach(function(key){
+            if(key != 'settings'){
+                createOption(key);
+            }
+        });
+        
+        pageElements.selectBox.removeChild(document.getElementById('loading'));
+        pageElements.selectBox.addEventListener('change', onPadChange);
+        pageElements.addButton.addEventListener('click', addPad);
+    };
+    
+    function createOption(key){
+        var opt = document.createElement('option');
+            if(settings.selected && settings.selected == key){
+                opt.selected = "selected";
+            }
+            opt.value = key;
+            opt.innerHTML = key;
+        pageElements.selectBox.appendChild(opt);
+    };
+    
+    function onPadChange(){
+        settings.selected = pageElements.selectBox.value;
+        saveSettings();
+        loadPad(settings.selected);
+    };
+    
+    function addPad(){
+        let name = prompt("Enter pad name:");
+        
+        savePad(name, "");
+        createOption(name);
+        pageElements.selectBox.value = name;
+        onPadChange();
+    };
+    
+    function loadPad(pad) {
+        pageElements.inputBox.innerText = localStorage.getItem(pad);
+        
+        pageElements.inputBox.addEventListener('input', function () {
+            savePad(settings.selected, pageElements.inputBox.innerText);
+        });
+    };
+    
+    function persistInput(pad) {
+        let storedValue = localStorage.getItem(pad);
+        if (storedValue){
+            pageElements.inputBox.innerText = storedValue;
+        }
+        pageElements.inputBox.addEventListener('input', function () {
             localStorage.setItem(key, input.innerText);
             });
-            }
-        var inputElement = document.getElementById("body");
-        persistInput(inputElement);
+    };
+    
+    function saveSettings(){
+        localStorage.setItem('settings',JSON.stringify(settings));
+    };
+    
+    function getSettings(){
+        settings = JSON.parse(localStorage.getItem('settings'));
+        return settings;
+    };
+    
+    function savePad(pad, text){
+        localStorage.setItem(pad, text);  
+    };
+    
+    function getPad(pad){
+        localStorage.getItem('pad');  
+    };
+    
+    initialize();
 </script>
 </html>
