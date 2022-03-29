@@ -1,0 +1,29 @@
+<html contenteditable>
+    <head>
+        <style>
+            body{
+                font-family:Conosolas, Monaco, monospace;
+                font-size:18px;
+                padding:18px;
+                border:2px solid #eeee00;
+                }
+        </style>
+        <title>Scratch Pad</title>
+    </head>
+<body id="body">
+    
+</body>
+<script>
+    document.querySelector('body').focus();
+    function persistInput(input) { 
+        var key = "input-" + input.id;
+        var storedValue = localStorage.getItem(key);
+        if (storedValue) input.innerText = storedValue;
+        input.addEventListener('input', function () {
+            localStorage.setItem(key, input.innerText);
+            });
+            }
+        var inputElement = document.getElementById("body");
+        persistInput(inputElement);
+</script>
+</html>
