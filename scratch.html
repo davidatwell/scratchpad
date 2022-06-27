@@ -151,7 +151,11 @@
     };
     
     function getSettings(){
-        settings = JSON.parse(localStorage.getItem('settings'));
+        var settings = {};
+        var settingsString = localStorage.getItem('settings'));
+        if(settingsString.length) > 0 {
+            settings = JSON.parse(localStorage.getItem('settings'));
+        }
         return settings;
     };
     
